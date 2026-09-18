@@ -1,0 +1,11 @@
+# Build output
+cpumon
+build/
+*.o
+*.deb
+
+# Editor/OS cruft
+.vscode/
+.idea/
+*.swp
+.DS_Store
