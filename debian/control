@@ -1,0 +1,24 @@
+Source: cpumon
+Section: utils
+Priority: optional
+Maintainer: Shabbir Yusufali <shabyusufali@gmail.com>
+Build-Depends: debhelper-compat (= 13), libncursesw5-dev | libncurses-dev, pkg-config
+Standards-Version: 4.6.2
+Homepage: https://github.com/shabbiryusufali/cpumon
+Rules-Requires-Root: no
+
+Package: cpumon
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: scrollable, man-page-styled Linux CPU usage monitor
+ cpumon reads /proc/stat (aggregate and per-core user/nice/system/idle/
+ iowait/irq/softirq/steal jiffie counters, context switches, forks,
+ running/blocked process counts) along with /proc/loadavg, /proc/uptime,
+ and /proc/cpuinfo, and displays it as a scrollable, man-page-styled
+ terminal report that auto-refreshes on a configurable interval (seconds,
+ minutes, hours, or days).
+ .
+ It also runs headless via a bundled systemd service (enabled and started
+ automatically on install), appending timestamped snapshots to a daily
+ log file. Log files are pruned automatically after a configurable
+ retention period (30 days by default; see /etc/cpumon/cpumon.conf).

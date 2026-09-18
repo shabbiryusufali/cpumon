@@ -1,0 +1,27 @@
+Package: cpumon
+Version: 1.0-1
+Architecture: amd64
+Maintainer: Shabbir Yusufali <shabyusufali@gmail.com>
+Installed-Size: 76
+Depends: libc6 (>= 2.38), libncursesw6 (>= 6), libtinfo6 (>= 6)
+Filename: pool/main/cpumon_1.0-1_amd64.deb
+Size: 27868
+MD5sum: f23013e006f49cf63907decd15f81350
+SHA1: 8f5042cc13276cce366311d41d52a93125a9fdf4
+SHA256: e5881f705c6b6edad6da8ee6b9e06ceb3dcf7e17982f2fd7aa2583e4db6bfe91
+Section: utils
+Priority: optional
+Homepage: https://github.com/shabbiryusufali/cpumon
+Description: scrollable, man-page-styled Linux CPU usage monitor
+ cpumon reads /proc/stat (aggregate and per-core user/nice/system/idle/
+ iowait/irq/softirq/steal jiffie counters, context switches, forks,
+ running/blocked process counts) along with /proc/loadavg, /proc/uptime,
+ and /proc/cpuinfo, and displays it as a scrollable, man-page-styled
+ terminal report that auto-refreshes on a configurable interval (seconds,
+ minutes, hours, or days).
+ .
+ It also runs headless via a bundled systemd service (enabled and started
+ automatically on install), appending timestamped snapshots to a daily
+ log file. Log files are pruned automatically after a configurable
+ retention period (30 days by default; see /etc/cpumon/cpumon.conf).
+

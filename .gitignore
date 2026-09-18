@@ -1,0 +1,31 @@
+# Compiled binary (build with `make` or scripts/build-deb.sh)
+/cpumon
+*.o
+
+# dpkg-buildpackage output (writes to the parent directory as a native
+# package build; also covers stray copies at the repo root)
+/*.deb
+/*.ddeb
+/*.buildinfo
+/*.changes
+/*.build
+
+# debhelper build state
+/debian/.debhelper/
+/debian/cpumon/
+/debian/cpumon-dbgsym/
+/debian/debhelper-build-stamp
+/debian/files
+/debian/*.substvars
+/debian/*.debhelper
+/debian/*.debhelper.log
+
+# The published flat apt repo (pool/, Packages, Packages.gz) IS tracked
+# on purpose - this repo is served directly as an apt source. Only the
+# stray root-level .deb copies above are ignored.
+
+# Editor/OS cruft
+.vscode/
+.idea/
+*.swp
+.DS_Store
