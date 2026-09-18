@@ -1,0 +1,112 @@
+.TH CPUMON 1 "2026-09-18" "cpumon 1.0" "User Commands"
+.SH NAME
+cpumon \- scrollable, man-page-styled Linux CPU usage monitor
+.SH SYNOPSIS
+.B cpumon
+[\fIOPTIONS\fR]
+.SH DESCRIPTION
+.B cpumon
+reads
+.I /proc/stat
+(aggregate and per-core user/nice/system/idle/iowait/irq/softirq/steal
+jiffie counters, context switches, forks, running/blocked process counts)
+along with
+.IR /proc/loadavg ,
+.IR /proc/uptime "  and  " /proc/cpuinfo ,
+and displays it either as a scrollable interactive terminal display that
+auto-refreshes on a timer, or logs it to a daily file in headless
+.B \-\-daemon
+mode, intended to run under systemd.
+.PP
+CPU usage is a rate, not a snapshot: every measurement is the delta between
+two
+.I /proc/stat
+reads. The first frame of any mode is produced from a 200ms bootstrap
+sample pair; subsequent frames use the delta between consecutive interval
+ticks.
+.SH OPTIONS
+.TP
+.BR \-i ", " \-\-interval " " \fIINTERVAL\fR
+Refresh/log interval. Accepts plain seconds or a suffix: \fBs\fR (seconds),
+\fBm\fR (minutes), \fBh\fR (hours), \fBd\fR (days). Examples: \fB5\fR,
+\fB5s\fR, \fB5m\fR, \fB1h\fR. Default: \fB5s\fR.
+.TP
+.BR \-d ", " \-\-daemon
+Headless mode: no interactive display, just logs a snapshot on each
+interval. Intended for systemd. Handles SIGTERM/SIGINT for clean shutdown.
+.TP
+.BR \-o ", " \-\-once
+Print a single snapshot to stdout and exit. No interactive display, no
+loop, no log file written.
+.TP
+.BR \-p ", " \-\-plain
+Interactive watch mode without ncurses: plain ANSI clear-screen/redraw
+instead of full cursor addressing. Use this if the default ncurses
+display looks garbled or fails to redraw in place on your terminal
+(seen on some Windows/WSL terminal front-ends).
+.TP
+.BR \-l ", " \-\-log\-dir " " \fIDIR\fR
+Directory for daily log files, named \fIYYYY\-MM\-DD.log\fR. Default:
+\fI/var/log/cpumon\fR (falls back to \fI~/.local/share/cpumon\fR if that
+is not writable).
+.TP
+.BR \-r ", " \-\-log\-retention\-days " " \fIN\fR
+Delete log files older than \fIN\fR days automatically. \fBN=0\fR disables
+auto-deletion and keeps logs forever. Default: \fB30\fR. Can also be set via
+the \fBCPUMON_LOG_RETENTION_DAYS\fR environment variable (the systemd unit
+sets this from \fI/etc/cpumon/cpumon.conf\fR); an explicit \fB\-r\fR on the
+command line takes precedence.
+.TP
+.BR \-n ", " \-\-no\-log
+Disable logging while in interactive mode.
+.TP
+.BR \-h ", " \-\-help
+Show usage help and exit.
+.TP
+.BR \-v ", " \-\-version
+Show version and exit.
+.SH INTERACTIVE KEYS
+.TP
+.B q
+Quit.
+.TP
+.B "up/down or j/k"
+Scroll one line.
+.TP
+.B "PgUp/PgDn"
+Scroll one page.
+.TP
+.B "g / G"
+Jump to top / bottom of the report.
+.TP
+.B r
+Refresh immediately and reset the countdown.
+.SH FILES
+.TP
+.I /var/log/cpumon/YYYY\-MM\-DD.log
+Default daily log location (see \fB\-\-log\-dir\fR). Files older than the
+retention window (see \fB\-\-log\-retention\-days\fR) are deleted automatically.
+.TP
+.I /etc/cpumon/cpumon.conf
+Configuration sourced by the systemd unit (interval, log directory, log
+retention). Edit and run \fBsystemctl restart cpumon\fR to apply.
+.TP
+.I /lib/systemd/system/cpumon.service
+systemd unit for running cpumon as a headless logging daemon.
+.SH EXAMPLES
+.TP
+cpumon
+Interactive display, refreshing every 5 seconds.
+.TP
+cpumon \-i 5m
+Interactive display, refreshing every 5 minutes.
+.TP
+cpumon \-\-once
+One-shot plain text report.
+.TP
+cpumon \-\-daemon \-i 5m
+Headless logger, as used by the systemd service.
+.SH SEE ALSO
+.BR top (1),
+.BR mpstat (1),
+.BR proc (5)
