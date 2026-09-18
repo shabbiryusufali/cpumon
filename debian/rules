@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	dh_auto_build -- cpumon
+
+override_dh_auto_install:
+	install -Dm755 cpumon debian/cpumon/usr/bin/cpumon
+	install -Dm644 config/cpumon.conf debian/cpumon/etc/cpumon/cpumon.conf
+
+override_dh_auto_test:
+	# No test suite.
+
+override_dh_auto_clean:
+	dh_auto_clean
+	$(RM) cpumon

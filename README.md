@@ -23,13 +23,49 @@ default**) are deleted automatically — see [Log retention](#log-retention).
 ## Project layout
 
 ```
-VERSION               The version. Bump it (and the man page) in one step.
+VERSION               The version. Bump it (and debian/changelog + the man page)
+                       in one step with scripts/bump-version.sh
 src/cpumon.c        Source (single-file C program)
 man/cpumon.1         Man page
-systemd/cpumon.service   systemd unit (installed by `make install`)
+systemd/cpumon.service   systemd unit (installed by both `make install` and the .deb)
 config/cpumon.conf   Default runtime config, installed to /etc/cpumon/cpumon.conf
-Makefile             Plain `make` / `make install` build
+Makefile             Plain `make` / `make install` build, for a non-packaged install
+debian/               Debian packaging (dpkg-buildpackage / debhelper)
+scripts/build-deb.sh  Builds the .deb and publishes it into pool/ + Packages(.gz)
+pool/, Packages, Packages.gz   The flat apt repository served from this repo
 ```
+
+## Install via apt (recommended)
+
+This repo doubles as a flat apt repository (`pool/`, `Packages`, `Packages.gz`
+at the root). Once it's hosted somewhere apt can reach over HTTP(S) — see
+[PACKAGING.md](PACKAGING.md) for hosting options — point apt at it and
+install/upgrade normally:
+
+```bash
+echo "deb [trusted=yes] https://<wherever-you-host-this-repo>/ ./" | \
+    sudo tee /etc/apt/sources.list.d/cpumon.list
+sudo apt update
+sudo apt install cpumon
+```
+
+Later releases just need:
+
+```bash
+sudo apt update
+sudo apt upgrade cpumon
+```
+
+Installing the package:
+- puts the binary at `/usr/bin/cpumon`
+- installs `/etc/cpumon/cpumon.conf` (edit this to change the interval, log
+  directory, or log retention — see below)
+- installs and **enables + starts** `cpumon.service` automatically, no manual
+  `systemctl enable` step needed
+- installs the man page and docs
+
+See [PACKAGING.md](PACKAGING.md) for how the repo is built/published, or to
+install a single `.deb` directly without adding a repo.
 
 ## Build from source
 
