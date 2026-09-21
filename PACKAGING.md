@@ -12,7 +12,8 @@ are covered below:
 This is a real Debian source package (`debian/` uses debhelper, compat 13),
 built with the standard `dpkg-buildpackage` tooling — not a hand-rolled
 `DEBIAN/control` tree. A pre-built package lives in `pool/main/`, with the
-matching `Packages`/`Packages.gz` index already generated at the repo root.
+matching `Packages`/`Packages.gz`/`Release` index already generated at the
+repo root.
 
 **Before publishing a new build**, check `debian/control`'s `Maintainer:`
 field is accurate for your setup.
@@ -74,8 +75,9 @@ updates the man page's version/date. Then build:
 ```
 
 This runs `dpkg-buildpackage -us -uc -b`, copies the resulting
-`.deb` into `pool/main/`, and regenerates `Packages`/`Packages.gz` at the
-repo root so the flat repository (see below) is immediately up to date.
+`.deb` into `pool/main/`, and regenerates `Packages`/`Packages.gz`/`Release`
+at the repo root so the flat repository (see below) is immediately up to
+date.
 
 Prefer to drive the tools yourself?
 
@@ -87,9 +89,11 @@ dpkg-buildpackage -us -uc -b     # builds ../cpumon_<version>_amd64.deb
 
 This is what lets `apt update && apt install cpumon` work without anyone
 downloading a file by hand. This repo already is a **flat repository**: a
-directory of `.deb` files (`pool/`) plus an index (`Packages`,
-`Packages.gz`), served over plain HTTP(S) — exactly what `scripts/build-deb.sh`
-regenerates on every build.
+directory of `.deb` files (`pool/`) plus an index (`Packages`, `Packages.gz`,
+`Release`), served over plain HTTP(S) — exactly what `scripts/build-deb.sh`
+regenerates on every build. `Release` (unsigned) is required — without it
+apt refuses the repo with "does not have a Release file" — and is what gets
+signed below for anything beyond personal use.
 
 Serve the checked-out repo directory (or the corresponding branch, e.g. via
 GitHub Pages, an S3 bucket, or any static file host) over HTTPS, then on a
@@ -111,12 +115,8 @@ repo instead of using `trusted=yes`:
 ```bash
 gpg --full-generate-key                 # if you don't have a key yet
 
-# Generate Release/InRelease from a clean copy containing only the repo
-# files (Packages, Packages.gz, pool/) - NOT the full git checkout, which
-# also has debian/, src/, .git/, etc. that don't belong in the index.
-mkdir -p /tmp/cpumon-repo && cp -r Packages Packages.gz pool /tmp/cpumon-repo/
-cd /tmp/cpumon-repo
-apt-ftparchive release . > Release
+# Sign the Release file already published at the repo root by
+# scripts/build-deb.sh.
 gpg --default-key YOUR_KEY_ID -abs -o Release.gpg Release   # detached sig
 # or, for the modern inline form apt also accepts:
 gpg --default-key YOUR_KEY_ID --clearsign -o InRelease Release
@@ -151,5 +151,5 @@ shipped default and you've also modified it locally).
 | `config/cpumon.conf` | Default config installed to `/etc/cpumon/cpumon.conf` |
 | `Makefile` | Plain `make` / `make install`, for a non-packaged install |
 | `debian/` | Debhelper packaging: `control`, `rules`, `changelog`, `copyright`, etc. |
-| `scripts/build-deb.sh` | Builds the .deb and publishes it into `pool/main/` + regenerates `Packages`/`Packages.gz` |
-| `pool/`, `Packages`, `Packages.gz` | The flat apt repository served from this repo |
+| `scripts/build-deb.sh` | Builds the .deb and publishes it into `pool/main/` + regenerates `Packages`/`Packages.gz`/`Release` |
+| `pool/`, `Packages`, `Packages.gz`, `Release` | The flat apt repository served from this repo |

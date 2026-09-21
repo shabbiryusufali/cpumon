@@ -1,0 +1,19 @@
+Architectures: amd64
+Codename: stable
+Date: Mon, 21 Sep 2026 16:28:58 +0000
+Description: cpumon flat apt repository
+Label: cpumon
+Origin: cpumon
+Suite: stable
+MD5Sum:
+ 030b1a447a74753df900ff34c1074468             1223 Packages
+ 59391eac39f171880fa573dff9187dce              776 Packages.gz
+SHA1:
+ 665e1dc7f39725ab364c840eea5796e91561bdb9             1223 Packages
+ a103557a6b5cfaebcaa7568ee2af31b6500410b1              776 Packages.gz
+SHA256:
+ 86f81f01946930c01107619748358993dac36bcc7b31c7c7dce0ac673482cbfc             1223 Packages
+ 79f9786c110eb4a52b8c605b581886b420ec36cdada6ccad187ad1c6d0c998cd              776 Packages.gz
+SHA512:
+ cc6ecf67f08764895cf65862b8256f2cadb3f1572094deb66d6a3501071e8bf77f1efbbde67fe0c1d283a901d3a80db22c69fb5c601982b9b166da41fef32e76             1223 Packages
+ 85c63e0244ecdbcc088d2eec7d23fcd77bdb46f2e824dc6189d4b343a9dfa13c70afb4ea601257ccf8566203632d61e92b94c52124a95c3792e62ddb0bc6a33c              776 Packages.gz
