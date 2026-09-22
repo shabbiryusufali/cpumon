@@ -1,3 +1,22 @@
+cpumon (1.1-1) unstable; urgency=medium
+
+  * New: top CPU-consuming processes, per-core frequency, CPU temperature
+    and CPU pressure (PSI) readings.
+  * New: usage-history sparklines in the interactive displays.
+  * New: JSON Lines and CSV output (--format) for --once and log files.
+  * New: high-usage alerts (--alert, --alert-duration) via syslog, the log
+    file and an on-screen banner.
+  * New: gzip compression of old logs (--compress-after-days) and --replay
+    with --since/--until to print logged history.
+  * New: systemd journal output (--log-target journal|both).
+  * New: config files (/etc/cpumon/cpumon.conf, ~/.config/cpumon/cpumon.conf,
+    --config); the daemon re-reads its config on SIGHUP and the unit gains
+    ExecReload.
+  * Fix: make install points the systemd unit at the installed binary.
+  * Add unit and smoke tests (run during the package build) and CI.
+
+ -- Shabbir Yusufali <shabyusufali@gmail.com>  Tue, 22 Sep 2026 19:54:41 +0000
+
 cpumon (1.0-1) unstable; urgency=medium
 
   * Initial packaged release.

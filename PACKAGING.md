@@ -21,7 +21,7 @@ field is accurate for your setup.
 ## 1. Install the .deb directly (simplest)
 
 ```bash
-sudo apt install ./pool/main/cpumon_1.0-1_amd64.deb
+sudo apt install ./pool/main/cpumon_1.1-1_amd64.deb
 ```
 
 Using `apt install ./file.deb` (not `dpkg -i`) is what you want: apt reads

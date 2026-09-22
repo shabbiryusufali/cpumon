@@ -1,19 +1,19 @@
 Architectures: amd64
 Codename: stable
-Date: Mon, 21 Sep 2026 16:28:58 +0000
+Date: Tue, 22 Sep 2026 19:54:56 +0000
 Description: cpumon flat apt repository
 Label: cpumon
 Origin: cpumon
 Suite: stable
 MD5Sum:
- 030b1a447a74753df900ff34c1074468             1223 Packages
- 59391eac39f171880fa573dff9187dce              776 Packages.gz
+ 18e57e4e0d3d8864843d634a4307b526             2746 Packages
+ af4e72491c3f287bf313ddb3eaed4c72             1151 Packages.gz
 SHA1:
- 665e1dc7f39725ab364c840eea5796e91561bdb9             1223 Packages
- a103557a6b5cfaebcaa7568ee2af31b6500410b1              776 Packages.gz
+ 8b5df4e01538acca0131961051deaa5cf137b9af             2746 Packages
+ 67ec26b075c87d54596812f83b17ced49632253e             1151 Packages.gz
 SHA256:
- 86f81f01946930c01107619748358993dac36bcc7b31c7c7dce0ac673482cbfc             1223 Packages
- 79f9786c110eb4a52b8c605b581886b420ec36cdada6ccad187ad1c6d0c998cd              776 Packages.gz
+ 2a938cfaa4107110e351a942f9852ed1487d2766ead48e0fea7ef993bd7594ea             2746 Packages
+ ead8c2ae51818088b0d483566990e439af2534742642fc5fa6c2e72f73d36693             1151 Packages.gz
 SHA512:
- cc6ecf67f08764895cf65862b8256f2cadb3f1572094deb66d6a3501071e8bf77f1efbbde67fe0c1d283a901d3a80db22c69fb5c601982b9b166da41fef32e76             1223 Packages
- 85c63e0244ecdbcc088d2eec7d23fcd77bdb46f2e824dc6189d4b343a9dfa13c70afb4ea601257ccf8566203632d61e92b94c52124a95c3792e62ddb0bc6a33c              776 Packages.gz
+ 0f1ee12d717427ec1ab0adc52a5bcef6f6650aeb717e04a536a069b716596f5f64b1cb2192fa04dd5820da61c9b21edae438336f6e3d71acd67c0903fb2f729b             2746 Packages
+ 451798e8d033e6b1a73b58141043cbde0fc511ad3dc54da9aa25038bb77dbbf854aa3dce521c93aec8979e791aa01f7f335ef70f8d6e570ea7898b2868042a4c             1151 Packages.gz
