@@ -5,9 +5,9 @@
 # at the repo root so `apt update && apt install cpumon` works against this
 # repo as-is.
 #
-# Requires: dpkg-dev, debhelper, libncursesw5-dev (or libncurses-dev), pkg-config,
+# Requires: dpkg-dev, debhelper, libncursesw5-dev (or libncurses-dev), zlib1g-dev, pkg-config,
 # apt-utils (for apt-ftparchive).
-#   sudo apt-get install build-essential debhelper libncurses-dev pkg-config dpkg-dev apt-utils
+#   sudo apt-get install build-essential debhelper libncurses-dev zlib1g-dev pkg-config dpkg-dev apt-utils
 #
 # Usage: ./scripts/build-deb.sh
 set -e

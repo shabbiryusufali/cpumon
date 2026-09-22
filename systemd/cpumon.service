@@ -6,19 +6,16 @@ After=local-fs.target
 [Service]
 Type=simple
 # LogsDirectory= makes systemd create /var/log/cpumon (mode 0755, owned by
-# the service's User=/Group=) before ExecStart runs, and removes it again
-# only if RuntimeDirectoryPreserve isn't set - log files persist across
-# restarts either way since this just controls the directory itself.
+# the service's User=/Group=) before ExecStart runs; log files persist
+# across restarts.
 LogsDirectory=cpumon
 
-# Defaults, overridable without touching this file: edit
-# /etc/cpumon/cpumon.conf and `systemctl restart cpumon`.
-Environment=CPUMON_INTERVAL=5m
-Environment=CPUMON_LOG_DIR=/var/log/cpumon
-Environment=CPUMON_LOG_RETENTION_DAYS=30
-EnvironmentFile=-/etc/cpumon/cpumon.conf
-
-ExecStart=/usr/bin/cpumon --daemon --interval ${CPUMON_INTERVAL} --log-dir ${CPUMON_LOG_DIR} --log-retention-days ${CPUMON_LOG_RETENTION_DAYS}
+# All settings (interval, log dir/format/target, retention, compression,
+# top processes, alerts) live in /etc/cpumon/cpumon.conf. Edit it, then
+# `systemctl reload cpumon` - SIGHUP makes cpumon re-read the file and
+# reopen its log without losing its place.
+ExecStart=/usr/bin/cpumon --daemon --config /etc/cpumon/cpumon.conf
+ExecReload=/bin/kill -HUP $MAINPID
 
 # Restart automatically if it ever crashes; it otherwise loops forever.
 Restart=on-failure

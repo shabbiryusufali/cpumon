@@ -1,9 +1,18 @@
-.TH CPUMON 1 "2026-09-18" "cpumon 1.0" "User Commands"
+.TH CPUMON 1 "2026-09-22" "cpumon 1.1" "User Commands"
 .SH NAME
 cpumon \- scrollable, man-page-styled Linux CPU usage monitor
 .SH SYNOPSIS
 .B cpumon
 [\fIOPTIONS\fR]
+.br
+.B cpumon \-\-once
+[\fB\-\-format\fR \fItext\fR|\fIjson\fR|\fIcsv\fR] [\fIOPTIONS\fR]
+.br
+.B cpumon \-\-daemon
+[\fB\-\-config\fR \fIFILE\fR] [\fIOPTIONS\fR]
+.br
+.B cpumon \-\-replay
+[\fB\-\-since\fR \fIWHEN\fR] [\fB\-\-until\fR \fIWHEN\fR] [\fIOPTIONS\fR]
 .SH DESCRIPTION
 .B cpumon
 reads
@@ -12,32 +21,39 @@ reads
 jiffie counters, context switches, forks, running/blocked process counts)
 along with
 .IR /proc/loadavg ,
-.IR /proc/uptime "  and  " /proc/cpuinfo ,
+.IR /proc/uptime ,
+.IR /proc/cpuinfo ,
+CPU pressure stall information
+.RI ( /proc/pressure/cpu ),
+per-core frequency (cpufreq), CPU temperature sensors (hwmon and thermal
+zones) and per-process CPU time
+.RI ( /proc/[pid]/stat ),
 and displays it either as a scrollable interactive terminal display that
-auto-refreshes on a timer, or logs it to a daily file in headless
+auto-refreshes on a timer, or logs it in headless
 .B \-\-daemon
-mode, intended to run under systemd.
+mode, intended to run under systemd, to a daily file (text, JSON Lines or
+CSV) and/or the systemd journal.
 .PP
 CPU usage is a rate, not a snapshot: every measurement is the delta between
 two
 .I /proc/stat
 reads. The first frame of any mode is produced from a 200ms bootstrap
 sample pair; subsequent frames use the delta between consecutive interval
-ticks.
-.SH OPTIONS
-.TP
-.BR \-i ", " \-\-interval " " \fIINTERVAL\fR
-Refresh/log interval. Accepts plain seconds or a suffix: \fBs\fR (seconds),
-\fBm\fR (minutes), \fBh\fR (hours), \fBd\fR (days). Examples: \fB5\fR,
-\fB5s\fR, \fB5m\fR, \fB1h\fR. Default: \fB5s\fR.
+ticks. Process CPU usage is reported like
+.BR top (1):
+percent of one CPU, so a process fully using four cores shows 400%.
+.SH MODES
+The default mode is the interactive ncurses display.
 .TP
 .BR \-d ", " \-\-daemon
 Headless mode: no interactive display, just logs a snapshot on each
 interval. Intended for systemd. Handles SIGTERM/SIGINT for clean shutdown.
+SIGHUP re-reads the config file, reopens the log file and restarts the
+interval wait.
 .TP
 .BR \-o ", " \-\-once
-Print a single snapshot to stdout and exit. No interactive display, no
-loop, no log file written.
+Print a single snapshot to stdout (in \fB\-\-format\fR) and exit. No
+interactive display, no loop, no log file written.
 .TP
 .BR \-p ", " \-\-plain
 Interactive watch mode without ncurses: plain ANSI clear-screen/redraw
@@ -45,26 +61,93 @@ instead of full cursor addressing. Use this if the default ncurses
 display looks garbled or fails to redraw in place on your terminal
 (seen on some Windows/WSL terminal front-ends).
 .TP
+.BR \-R ", " \-\-replay
+Print logged snapshots from the log directory to stdout and exit. Reads
+every log format, compressed or not. Exits with status 1 if nothing
+matched.
+.TP
+.BR \-s ", " \-\-since " " \fIWHEN\fR
+.TQ
+.BR \-u ", " \-\-until " " \fIWHEN\fR
+Limit \fB\-\-replay\fR to snapshots at or after / at or before \fIWHEN\fR:
+\fIYYYY\-MM\-DD\fR, \fIYYYY\-MM\-DD HH:MM\fR[\fI:SS\fR] (a \fBT\fR separator
+also works), \fBtoday\fR, \fByesterday\fR, \fBnow\fR, or an interval
+meaning that long ago (\fB30m\fR, \fB2h\fR, \fB7d\fR). A bare date given
+to \fB\-\-until\fR means the end of that day.
+.SH OPTIONS
+Each setting's config-file/environment key is shown in brackets.
+.TP
+.BR \-i ", " \-\-interval " " \fIINTERVAL\fR
+[\fBCPUMON_INTERVAL\fR] Refresh/log interval. Accepts plain seconds or a
+suffix: \fBs\fR (seconds), \fBm\fR (minutes), \fBh\fR (hours), \fBd\fR
+(days). Examples: \fB5\fR, \fB5s\fR, \fB5m\fR, \fB1h\fR. Default: \fB5s\fR.
+.TP
+.BR \-f ", " \-\-format " " \fIFMT\fR
+[\fBCPUMON_FORMAT\fR] \fBtext\fR, \fBjson\fR or \fBcsv\fR. Applies to
+\fB\-\-once\fR output and to log files, which are named
+\fIYYYY\-MM\-DD.log\fR, \fI.jsonl\fR or \fI.csv\fR respectively. JSON logs
+hold one object per line; CSV logs have a header row followed by one row
+per snapshot. Default: \fBtext\fR.
+.TP
+.BR \-t ", " \-\-top " " \fIN\fR
+[\fBCPUMON_TOP\fR] Show and log the \fIN\fR processes that used the most CPU
+during each interval (at most 50). \fB0\fR disables process scanning.
+Default: \fB5\fR.
+.TP
+.BR \-a ", " \-\-alert " " \fIPCT\fR
+[\fBCPUMON_ALERT_THRESHOLD\fR] Raise an alert when total CPU usage stays at
+or above \fIPCT\fR percent for the alert duration, and clear it when usage
+drops back below. Alerts go to syslog (and so the journal) and the log
+file, and are shown as a banner in the interactive displays. \fB0\fR
+disables alerts. Default: \fB0\fR.
+.TP
+.BR \-A ", " \-\-alert\-duration " " \fIDURATION\fR
+[\fBCPUMON_ALERT_DURATION\fR] How long usage must stay high before alerting,
+in interval syntax. Default: \fB0\fR (the first high sample).
+.TP
 .BR \-l ", " \-\-log\-dir " " \fIDIR\fR
-Directory for daily log files, named \fIYYYY\-MM\-DD.log\fR. Default:
+[\fBCPUMON_LOG_DIR\fR] Directory for daily log files. Default:
 \fI/var/log/cpumon\fR (falls back to \fI~/.local/share/cpumon\fR if that
 is not writable).
 .TP
 .BR \-r ", " \-\-log\-retention\-days " " \fIN\fR
-Delete log files older than \fIN\fR days automatically. \fBN=0\fR disables
-auto-deletion and keeps logs forever. Default: \fB30\fR. Can also be set via
-the \fBCPUMON_LOG_RETENTION_DAYS\fR environment variable (the systemd unit
-sets this from \fI/etc/cpumon/cpumon.conf\fR); an explicit \fB\-r\fR on the
-command line takes precedence.
+[\fBCPUMON_LOG_RETENTION_DAYS\fR] Delete log files older than \fIN\fR days
+automatically. \fBN=0\fR disables auto-deletion and keeps logs forever.
+Default: \fB30\fR.
+.TP
+.BR \-z ", " \-\-compress\-after\-days " " \fIN\fR
+[\fBCPUMON_COMPRESS_AFTER_DAYS\fR] gzip-compress log files that are at least
+\fIN\fR days old (to \fI.gz\fR). \fBN=0\fR disables compression. Default:
+\fB0\fR (the shipped \fI/etc/cpumon/cpumon.conf\fR sets \fB1\fR).
+.TP
+.BR \-T ", " \-\-log\-target " " \fITARGET\fR
+[\fBCPUMON_LOG_TARGET\fR] \fBfile\fR (daily log files), \fBjournal\fR (the
+systemd journal, with structured \fBCPUMON_*\fR fields and the full
+snapshot as \fBCPUMON_JSON\fR) or \fBboth\fR. Default: \fBfile\fR.
 .TP
 .BR \-n ", " \-\-no\-log
-Disable logging while in interactive mode.
+[\fBCPUMON_NO_LOG\fR] Disable logging while in interactive mode.
+.TP
+.BR \-c ", " \-\-config " " \fIFILE\fR
+Read settings from \fIFILE\fR instead of the default config file (see
+\fBCONFIGURATION\fR). It is an error if \fIFILE\fR can't be read.
 .TP
 .BR \-h ", " \-\-help
 Show usage help and exit.
 .TP
 .BR \-v ", " \-\-version
 Show version and exit.
+.SH CONFIGURATION
+Settings are applied in layers: built-in defaults, then a config file,
+then \fBCPUMON_*\fR environment variables, then command-line options.
+.PP
+The config file holds \fIKEY\fR=\fIVALUE\fR lines using the keys listed
+under \fBOPTIONS\fR; blank lines, \fB#\fR comments, an \fBexport\fR prefix
+and quoted values are accepted, and invalid lines are reported and skipped.
+\fB\-\-daemon\fR reads \fI/etc/cpumon/cpumon.conf\fR; the interactive modes
+and \fB\-\-once\fR read \fI$XDG_CONFIG_HOME/cpumon/cpumon.conf\fR
+(default \fI~/.config/cpumon/cpumon.conf\fR); \fB\-\-replay\fR reads both.
+Missing default files are ignored.
 .SH INTERACTIVE KEYS
 .TP
 .B q
@@ -81,15 +164,28 @@ Jump to top / bottom of the report.
 .TP
 .B r
 Refresh immediately and reset the countdown.
+.SH SIGNALS
+.TP
+.BR SIGTERM ", " SIGINT
+Stop cleanly.
+.TP
+.B SIGHUP
+In \fB\-\-daemon\fR mode, re-read the config file and reopen the log file
+(\fBsystemctl reload cpumon\fR sends this). In the interactive modes, quit.
 .SH FILES
 .TP
-.I /var/log/cpumon/YYYY\-MM\-DD.log
+.I /var/log/cpumon/YYYY\-MM\-DD.{log,jsonl,csv}[.gz]
 Default daily log location (see \fB\-\-log\-dir\fR). Files older than the
-retention window (see \fB\-\-log\-retention\-days\fR) are deleted automatically.
+retention window are deleted and files older than
+\fB\-\-compress\-after\-days\fR are gzip-compressed, whenever the log rolls
+over to a new day and when the daemon starts or reloads. Only files matching
+this pattern are ever touched.
 .TP
 .I /etc/cpumon/cpumon.conf
-Configuration sourced by the systemd unit (interval, log directory, log
-retention). Edit and run \fBsystemctl restart cpumon\fR to apply.
+Daemon configuration. Edit and run \fBsystemctl reload cpumon\fR to apply.
+.TP
+.I ~/.config/cpumon/cpumon.conf
+Per-user configuration for the interactive modes and \fB\-\-once\fR.
 .TP
 .I /lib/systemd/system/cpumon.service
 systemd unit for running cpumon as a headless logging daemon.
@@ -98,15 +194,23 @@ systemd unit for running cpumon as a headless logging daemon.
 cpumon
 Interactive display, refreshing every 5 seconds.
 .TP
-cpumon \-i 5m
-Interactive display, refreshing every 5 minutes.
+cpumon \-i 5m \-t 10
+Interactive display, refreshing every 5 minutes, showing the 10 busiest
+processes.
 .TP
-cpumon \-\-once
-One-shot plain text report.
+cpumon \-\-once \-\-format json
+One-shot report as a JSON object.
 .TP
-cpumon \-\-daemon \-i 5m
-Headless logger, as used by the systemd service.
+cpumon \-\-daemon \-i 5m \-a 90 \-A 10m
+Headless logger that alerts when usage stays at or above 90% for 10 minutes.
+.TP
+cpumon \-\-replay \-\-since yesterday \-\-until today
+Print yesterday's and today's logged snapshots.
+.TP
+journalctl \-u cpumon \-o json | jq \-r .CPUMON_TOTAL
+Total CPU usage from snapshots logged with \fB\-\-log\-target journal\fR.
 .SH SEE ALSO
 .BR top (1),
 .BR mpstat (1),
+.BR journalctl (1),
 .BR proc (5)

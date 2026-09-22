@@ -25,3 +25,34 @@ Description: scrollable, man-page-styled Linux CPU usage monitor
  log file. Log files are pruned automatically after a configurable
  retention period (30 days by default; see /etc/cpumon/cpumon.conf).
 
+Package: cpumon
+Version: 1.1-1
+Architecture: amd64
+Maintainer: Shabbir Yusufali <shabyusufali@gmail.com>
+Installed-Size: 121
+Depends: libc6 (>= 2.38), libncursesw6 (>= 6), libtinfo6 (>= 6), zlib1g (>= 1:1.1.4)
+Filename: pool/main/cpumon_1.1-1_amd64.deb
+Size: 51406
+MD5sum: e285c31c9cea70ae198e4f0d62b34027
+SHA1: 448a586b574ec29ea0494061ab46e05b43671e13
+SHA256: d684cad55411a5ca2571b1a7e2c699f41cdd3e1430eb489e9e10d7e093f95156
+Section: utils
+Priority: optional
+Homepage: https://github.com/shabbiryusufali/cpumon
+Description: scrollable, man-page-styled Linux CPU usage monitor
+ cpumon reads /proc/stat (aggregate and per-core user/nice/system/idle/
+ iowait/irq/softirq/steal jiffie counters, context switches, forks,
+ running/blocked process counts) along with /proc/loadavg, /proc/uptime,
+ /proc/cpuinfo, CPU pressure stall information, per-core frequency, CPU
+ temperature sensors and per-process CPU time, and displays it as a
+ scrollable, man-page-styled terminal report with usage history
+ sparklines and a top-processes list, auto-refreshing on a configurable
+ interval (seconds, minutes, hours, or days).
+ .
+ It also runs headless via a bundled systemd service (enabled and started
+ automatically on install), appending timestamped snapshots to a daily
+ log file as text, JSON Lines or CSV, and/or to the systemd journal, with
+ optional high-usage alerts. Old log files are gzip-compressed and pruned
+ after configurable periods (see /etc/cpumon/cpumon.conf), and
+ `cpumon --replay` prints logged history back out.
+
