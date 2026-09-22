@@ -2,7 +2,7 @@ Source: cpumon
 Section: utils
 Priority: optional
 Maintainer: Shabbir Yusufali <shabyusufali@gmail.com>
-Build-Depends: debhelper-compat (= 13), libncursesw5-dev | libncurses-dev, pkg-config
+Build-Depends: debhelper-compat (= 13), libncursesw5-dev | libncurses-dev, zlib1g-dev, pkg-config
 Standards-Version: 4.6.2
 Homepage: https://github.com/shabbiryusufali/cpumon
 Rules-Requires-Root: no
@@ -14,11 +14,15 @@ Description: scrollable, man-page-styled Linux CPU usage monitor
  cpumon reads /proc/stat (aggregate and per-core user/nice/system/idle/
  iowait/irq/softirq/steal jiffie counters, context switches, forks,
  running/blocked process counts) along with /proc/loadavg, /proc/uptime,
- and /proc/cpuinfo, and displays it as a scrollable, man-page-styled
- terminal report that auto-refreshes on a configurable interval (seconds,
- minutes, hours, or days).
+ /proc/cpuinfo, CPU pressure stall information, per-core frequency, CPU
+ temperature sensors and per-process CPU time, and displays it as a
+ scrollable, man-page-styled terminal report with usage history
+ sparklines and a top-processes list, auto-refreshing on a configurable
+ interval (seconds, minutes, hours, or days).
  .
  It also runs headless via a bundled systemd service (enabled and started
  automatically on install), appending timestamped snapshots to a daily
- log file. Log files are pruned automatically after a configurable
- retention period (30 days by default; see /etc/cpumon/cpumon.conf).
+ log file as text, JSON Lines or CSV, and/or to the systemd journal, with
+ optional high-usage alerts. Old log files are gzip-compressed and pruned
+ after configurable periods (see /etc/cpumon/cpumon.conf), and
+ `cpumon --replay` prints logged history back out.

@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build and test (${{ matrix.cc }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential clang libncurses-dev zlib1g-dev pkg-config python3
+
+      - name: Build (warnings are errors)
+        run: make CC=${{ matrix.cc }} CFLAGS="-O2 -g -Wall -Wextra -Werror -std=gnu11"
+
+      - name: Unit tests
+        run: make test CC=${{ matrix.cc }} CFLAGS="-O2 -g -Wall -Wextra -Werror -std=gnu11"
+
+      - name: Smoke tests
+        run: make smoke
+
+      - name: Unit tests under ASan/UBSan
+        if: matrix.cc == 'gcc'
+        run: |
+          rm -f tests/test_cpumon
+          make test CC=gcc CFLAGS="-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -std=gnu11" \
+                    LDFLAGS="-fsanitize=address,undefined"
+
+  deb:
+    name: Debian package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential debhelper dpkg-dev libncurses-dev zlib1g-dev pkg-config lintian
+
+      - name: Build package
+        run: dpkg-buildpackage -us -uc -b
+
+      - name: Inspect package
+        run: |
+          deb="$(ls ../cpumon_*.deb)"
+          dpkg-deb --info "$deb"
+          dpkg-deb --contents "$deb"
+          dpkg-deb --contents "$deb" | grep -q './usr/bin/cpumon$'
+          dpkg-deb --contents "$deb" | grep -q './usr/lib/systemd/system/cpumon.service$'
+          lintian --no-tag-display-limit "$deb" || true
+
+      - name: Install and run
+        run: |
+          sudo apt-get install -y "$(ls ../cpumon_*.deb)"
+          cpumon --version
+          cpumon --once
+          cpumon --once --format json

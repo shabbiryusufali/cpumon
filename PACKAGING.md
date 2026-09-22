@@ -25,16 +25,17 @@ sudo apt install ./pool/main/cpumon_1.0-1_amd64.deb
 ```
 
 Using `apt install ./file.deb` (not `dpkg -i`) is what you want: apt reads
-the package's `Depends:` line and pulls in `libncursesw6`/`libtinfo6` from
+the package's `Depends:` line and pulls in `libncursesw6`/`libtinfo6`/`zlib1g` from
 your normal repos automatically if they're missing, whereas plain `dpkg -i`
 will fail on missing dependencies and leave you to fix it with
 `apt-get install -f`.
 
 This gets you:
 - `/usr/bin/cpumon`
-- `/etc/cpumon/cpumon.conf` — interval, log directory, and log retention,
-  read by the systemd service (edit + `systemctl restart cpumon` to apply;
-  preserved across upgrades since it's a conffile)
+- `/etc/cpumon/cpumon.conf` — interval, log directory/format/target,
+  retention, compression, top processes and alerts, read by the systemd
+  service (edit + `systemctl reload cpumon` to apply; preserved across
+  upgrades since it's a conffile)
 - `/usr/lib/systemd/system/cpumon.service` — **enabled and started
   automatically** on install (via `dh_installsystemd`'s postinst), no manual
   `systemctl enable --now` needed
@@ -49,7 +50,7 @@ the systemd unit's enabled/disabled state and stop the service).
 Requires `debhelper`, `dpkg-dev`, a C compiler, and ncurses dev headers:
 
 ```bash
-sudo apt-get install build-essential debhelper libncursesw5-dev pkg-config dpkg-dev
+sudo apt-get install build-essential debhelper libncursesw5-dev zlib1g-dev pkg-config dpkg-dev
 ```
 
 (On newer Debian/Ubuntu releases where `libncursesw5-dev` no longer exists,
@@ -77,7 +78,8 @@ updates the man page's version/date. Then build:
 This runs `dpkg-buildpackage -us -uc -b`, copies the resulting
 `.deb` into `pool/main/`, and regenerates `Packages`/`Packages.gz`/`Release`
 at the repo root so the flat repository (see below) is immediately up to
-date.
+date. The build runs the unit tests (`make test`) first; set
+`DEB_BUILD_OPTIONS=nocheck` to skip them.
 
 Prefer to drive the tools yourself?
 

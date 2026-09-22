@@ -13,8 +13,10 @@ override_dh_auto_install:
 	install -Dm644 config/cpumon.conf debian/cpumon/etc/cpumon/cpumon.conf
 
 override_dh_auto_test:
-	# No test suite.
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	$(MAKE) test
+endif
 
 override_dh_auto_clean:
 	dh_auto_clean
-	$(RM) cpumon
+	$(RM) cpumon tests/test_cpumon

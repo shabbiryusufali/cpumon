@@ -29,3 +29,6 @@
 .idea/
 *.swp
 .DS_Store
+
+# Unit test binary (make test)
+/tests/test_cpumon
