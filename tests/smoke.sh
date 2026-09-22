@@ -30,6 +30,13 @@ for l in sys.stdin:
     fi
 }
 
+# Keeps one CPU busy for $1 seconds in the background, so tests that
+# need non-zero usage don't depend on how idle the machine happens to be.
+busy_loop() {
+    sh -c 'end=$(($(date +%s)+'"$1"')); while [ "$(date +%s)" -lt "$end" ]; do :; done' &
+    busy=$!
+}
+
 # Runs the daemon for roughly $1 seconds with the remaining arguments.
 run_daemon() {
     secs="$1"; shift
@@ -60,8 +67,7 @@ head -1 "$TMP/once.csv" | grep -q '^ts,time,host,total,' || fail "--once csv hea
 pass "--once text/json/csv"
 
 # A busy process should show up in the top list.
-sh -c 'end=$(($(date +%s)+3)); while [ "$(date +%s)" -lt "$end" ]; do :; done' &
-busy=$!
+busy_loop 3
 sleep 0.3
 "$BIN" --once --top 3 | grep -q "TOP PROCESSES" || fail "top processes missing under load"
 wait "$busy" || true
@@ -88,9 +94,14 @@ run_daemon 1.5 -i 1 -l "$TMP/logs-csv" -f csv
 [ "$(grep -c '^ts,' "$TMP/logs-csv/$(date +%Y-%m-%d).csv")" -eq 1 ] || fail "csv header repeated on reopen"
 pass "daemon text/json/csv logging"
 
-# Alerts: a 0.01% threshold with no hold time fires on the first frame.
+# Alerts: one busy CPU puts total usage at >= 100/ncores percent (above the
+# 0.5% threshold on machines with up to 200 cores), and with no hold time
+# the alert fires on the first frame. An idle machine can read exactly 0%.
 d="$TMP/logs-alert"; mkdir -p "$d"
-run_daemon 1.5 -i 1 -l "$d" -a 0.01
+busy_loop 3
+sleep 0.3
+run_daemon 1.5 -i 1 -l "$d" -a 0.5
+wait "$busy" || true
 grep -q '^!!! ALERT' "$d/$(date +%Y-%m-%d).log" || fail "alert not logged"
 pass "alerts"
 
